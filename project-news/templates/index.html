@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .news-container{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px;
+      }
+
+      .news {
+        border-radius: 15px;
+        background-color: rgb(226, 226, 226);
+        width: 90%;  
+        max-width: 800px; 
+        height: 200px; 
+        margin: 20px 0;
+        position: relative;
+        padding: 10px;
+      }
+
+      .tags {
+        font-size: 1.2rem;  
+        border-radius: 15px;
+        background-color: rgb(168, 168, 168);
+        width: 60px;
+        height: 30px;
+        margin: 10px;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin: 20px;
+        margin-left: 90px;
+        position: absolute;
+        display: flex;
+        top: 0px;
+        text-indent: 10px;
+      }
+
+      h2{
+        margin-left: 10px;
+      }
+
+
+      img {
+        width: 100%;
+        max-width: 120px;
+        height: auto;
+        border-radius: 15px;
+        position: absolute;
+        object-fit: cover;
+        top: 15px;
+        right: 15px;
+      }
+
+      .ncontent{
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 15px;
+        height: 150px;     
+      }
+
+      @media (max-width: 768px) {
+        .tags {
+          width: 50px;
+          height: 25px;
+          font-size: 1rem;
+        }
+        
+        h1 {
+          font-size: 1.2rem;
+          margin-left: 60px;
+        }
+
+        img {
+          width: 80px;
+          max-width: 80px;
+        }
+
+        .news {
+          width: 95%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .tags {
+          width: 45px;
+          height: 20px;
+          font-size: 0.9rem;
+        }
+
+        h1 {
+          font-size: 1.1rem;
+          margin-left: 50px;
+        }
+
+        img {
+          width: 70px;
+          max-width: 70px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!--핵심 뉴스 - 1개-->    
+    <h2><b>9:41 핵심 뉴스</b></h1>
+    <div class="news-container">
+      <div class="news">
+        <div class="tags"><p>부정적</p></div>
+        <h1>news title</h1>
+        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+        <spam class="ncontent">news-content</spam>
+      </div>
+
+
+      <!--내 관심사 뉴스 - 3개-->    
+    <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;">내 관심사 뉴스</h2>
+      <div class="news">
+        <div class="tags"><p>부정적</p></div>
+        <h1>news title</h1>
+        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+        <spam class="ncontent q">news-content</spam>
+      </div>
+
+      <div class="news">
+        <div class="tags"><p>부정적</p></div>
+        <h1>news title</h1>
+        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+        <spam class="ncontent">news-content</spam>
+      </div>
+      
+      <div class="news">
+        <div class="tags"><p>부정적</p></div>
+        <h1>news title</h1>
+        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+        <spam class="ncontent">news-content</spam>
+      </div>
+    </div>
+  </body>
+</html>
