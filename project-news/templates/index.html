@@ -235,8 +235,8 @@
 </body>
 <script>
     window.addEventListener("DOMContentLoaded", async function () {
-        const loading = document.getElementById("loading");
-        const content = document.getElementById("content");
+        const loading = document.getElementById(".loading-wrap");
+        const content = document.getElementById(".news-container");
 
         try {
             const response = await fetch('http://localhost:5000/news_get?name=경제');
@@ -262,8 +262,8 @@
             console.error("데이터 로드 실패", error);
         } finally {
             // 로딩 화면 숨기고 콘텐츠 보여줌
-            loading.style.display = "none";
-            content.style.display = "block";
+            if (loading) loading.style.display = "none";
+            if (loading) content.style.display = "block";
         }
     });
 
