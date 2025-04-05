@@ -32,6 +32,20 @@
             flex-direction: column;
         }
 
+        .news-op {
+            border-radius: 15px;
+            background-color: rgb(226, 226, 226);
+            width: 95%;
+            max-width: 600px;
+            margin: 20px 0;
+            position: relative;
+            padding: 15px;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+
         .tags {
             font-size: 1rem;
             border-radius: 15px;
@@ -153,6 +167,10 @@
                 min-height: 220px;
             }
 
+            .news-op{
+                min-height: 40px;
+            }
+
             .ncontent {
                 margin-top: 40px;
                 font-size: 0.75rem;
@@ -186,6 +204,10 @@
             .news {
                 min-height: 200px;
             }
+            
+            .news-op{
+                min-height: 30px;
+            }
 
             .ncontent {
                 margin-top: 35px;
@@ -196,17 +218,20 @@
     </style>
 </head>
 <body>
-    <div class="loading-wrap">
+    <div class="loading-wrap" id="loading-p">
       <div class="loading-spinner"></div>
-      <p>페이지가 로딩 중입니다...</p>
+      <p id="load-t">페이지가 로딩 중입니다... (1~3분 소요)</p>
     </div>
     <div class="news-container">
-      <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;">9:41 핵심 뉴스</h2>
+      <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;" id="main-title">시:분 핵심 뉴스</h2>
         <div class="news">
             <div class="tags" id="tags1"></div>
             <h1 id="title1"></h1>
             <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
             <span class="ncontent" id="summary1"></span>
+        </div>
+        <div class="news-op">
+            <span id="opinion1"></span>
         </div>
       <h1>&nbsp;</h1>
 
@@ -217,6 +242,10 @@
             <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
             <span class="ncontent" id="summary2"></span>
         </div>
+        <div class="news-op">
+            <span id="opinion2"></span>
+        </div>
+        <h2>&nbsp;</h2>
 
         <div class="news">
             <div class="tags" id="tags3"></div>
@@ -224,6 +253,10 @@
             <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
             <span class="ncontent" id="summary3"></span>
         </div>
+        <div class="news-op">
+            <span id="opinion3"></span>
+        </div>
+        <h2>&nbsp;</h2>
 
         <div class="news">
             <div class="tags" id="tags4"></div>
@@ -231,6 +264,10 @@
             <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
             <span class="ncontent" id="summary4"></span>
         </div>
+        <div class="news-op">
+            <span id="opinion4"></span>
+        </div>
+        <h2>&nbsp;</h2>
     </div>
 </body>
 <script>
@@ -241,29 +278,44 @@
         try {
             const response = await fetch('http://localhost:5000/news_get?name=경제');
             const data = await response.json();
+            let today = new Date();
+            let hours = today.getHours(); // 시
+            let minutes = today.getMinutes();  // 분
 
             // 데이터 넣기
             document.getElementById('title1').innerText = data.title1;
             document.getElementById('summary1').innerText = data.summary1;
             document.getElementById('tags1').innerText = `#${data.tags1}`;
+            document.getElementById('opinion1').innerText = data.opinion1;
 
             document.getElementById('title2').innerText = data.title2;
             document.getElementById('summary2').innerText = data.summary2;
             document.getElementById('tags2').innerText = `#${data.tags2}`;
+            document.getElementById('opinion2').innerText = data.opinion2;
 
             document.getElementById('title3').innerText = data.title3;
             document.getElementById('summary3').innerText = data.summary3;
             document.getElementById('tags3').innerText = `#${data.tags3}`;
+            document.getElementById('opinion3').innerText = data.opinion3;
 
             document.getElementById('title4').innerText = data.title4;
             document.getElementById('summary4').innerText = data.summary4;
             document.getElementById('tags4').innerText = `#${data.tags4}`;
+            document.getElementById('opinion4').innerText = data.opinion4;
+
+            // 한 자리 숫자일 경우 앞에 0을 붙이기
+            if (hours < 10) hours = '0' + hours;
+            if (minutes < 10) minutes = '0' + minutes;
+            document.getElementById('main-title').innerText = `${hours}:${minutes} 핵심 뉴스`;
+            document.getElementById("loading-p").style.display = "none";
         } catch (error) {
             console.error("데이터 로드 실패", error);
+            //document.getElementById("load-t").innerText = "데이터 로드 실패, 새로고침하여 다시 시도해 주세요.";
+
         } finally {
             // 로딩 화면 숨기고 콘텐츠 보여줌
-            if (loading) loading.style.display = "none";
-            if (loading) content.style.display = "block";
+            document.getElementById("load-t").innerText = "데이터 로드 실패, 새로고침하여 다시 시도해 주세요. \n(계속 실패할 시 개발자에게 문의 바랍니다.)";
+            //document.getElementById("loading-p").style.display = "none";
         }
     });
 
