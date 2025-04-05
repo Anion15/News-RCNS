@@ -1,159 +1,271 @@
 <!doctype html>
 <html lang="ko">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-
-      .news-container{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 20px;
-      }
-
-      .news {
-        border-radius: 15px;
-        background-color: rgb(226, 226, 226);
-        width: 90%;  
-        max-width: 800px; 
-        height: 200px; 
-        margin: 20px 0;
-        position: relative;
-        padding: 10px;
-      }
-
-      .tags {
-        font-size: 1.2rem;  
-        border-radius: 15px;
-        background-color: rgb(168, 168, 168);
-        width: 60px;
-        height: 30px;
-        margin: 10px;
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-        margin: 20px;
-        margin-left: 90px;
-        position: absolute;
-        display: flex;
-        top: 0px;
-        text-indent: 10px;
-      }
-
-      h2{
-        margin-left: 10px;
-      }
-
-
-      img {
-        width: 100%;
-        max-width: 120px;
-        height: auto;
-        border-radius: 15px;
-        position: absolute;
-        object-fit: cover;
-        top: 15px;
-        right: 15px;
-      }
-
-      .ncontent{
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 15px;
-        height: 150px;     
-      }
-
-      @media (max-width: 768px) {
-        .tags {
-          width: 50px;
-          height: 25px;
-          font-size: 1rem;
-        }
-        
-        h1 {
-          font-size: 1.2rem;
-          margin-left: 60px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
-        img {
-          width: 80px;
-          max-width: 80px;
+        .news-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            width: auto;
         }
 
         .news {
-          width: 95%;
+            border-radius: 15px;
+            background-color: rgb(226, 226, 226);
+            width: 95%;
+            max-width: 600px;
+            margin: 20px 0;
+            position: relative;
+            padding: 15px;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
         }
-      }
 
-      @media (max-width: 480px) {
         .tags {
-          width: 45px;
-          height: 20px;
-          font-size: 0.9rem;
+            font-size: 1rem;
+            border-radius: 15px;
+            background-color: rgb(168, 168, 168);
+            width: auto;
+            height: 25px;
+            margin: 11px;
+            position: absolute;
+            top: 25px;
+            left: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 8px;
         }
 
         h1 {
-          font-size: 1.1rem;
-          margin-left: 50px;
+            font-size: 1.2rem;
+            margin: 0;
+            padding-left: 130px;
+            padding-top: 8px;
+            margin-right: 110px;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        h2 {
+            margin-left: 10px;
         }
 
         img {
-          width: 70px;
-          max-width: 70px;
+            width: 100%;
+            max-width: 80px;
+            height: auto;
+            border-radius: 15px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            object-fit: cover;
+            margin-top: 10%;
         }
+
+        .ncontent {
+            margin-top: 45px;
+            padding: 10px 15px 15px 15px;
+            white-space: normal;
+            word-break: break-word;
+            font-size: 1rem;
+            line-height: 1.2;
+            width: 30rem;
+        }
+
+        b{
+          display: block; 
+          margin-left: 10px; 
+          font-size: 1.5rem; 
+          font-weight: bold;
+        }
+        
+
+        .loading-wrap {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 255, 255);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+      .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 5px solid #3498db;
+          border-top: 5px solid transparent;
+          border-radius: 50%;
+          animation: rotate 1s linear infinite;
       }
+
+      @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+      }
+        .ex-box {
+          padding: 10px;
+          border: 1px solid black;
+        }
+
+
+        
+
+        @media (max-width: 768px) {
+            .tags {
+                font-size: 0.9rem;
+                height: 20px;
+                margin: 5px;
+                top: 15px;
+                left: 8px;
+                padding: 0 6px;
+            }
+
+            h1 {
+                font-size: 1.1rem;
+                padding-left: 85px;
+                margin-right: 85px;
+                padding-top: 6px;
+            }
+
+            img {
+                max-width: 70px;
+                top: 8px;
+                right: 8px;
+            }
+
+            .news {
+                min-height: 220px;
+            }
+
+            .ncontent {
+                margin-top: 40px;
+                font-size: 0.75rem;
+                width: 15rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tags {
+                font-size: 0.8rem;
+                height: 18px;
+                margin: 3px;
+                top: 6px;
+                left: 6px;
+                padding: 0 5px;
+            }
+
+            h1 {
+                font-size: 1rem;
+                padding-left: 50px;
+                margin-right: 65px;
+                padding-top: 5px;
+            }
+
+            img {
+                max-width: 60px;
+                top: 6px;
+                right: 6px;
+            }
+
+            .news {
+                min-height: 200px;
+            }
+
+            .ncontent {
+                margin-top: 35px;
+                font-size: 0.7rem;
+                width: 10rem;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <!--핵심 뉴스 - 1개-->    
-    <h2><b>9:41 핵심 뉴스</b></h1>
-    <div class="news-container">
-      <div class="news">
-        <div class="tags"><p>부정적</p></div>
-        <h1>news title</h1>
-        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
-        <spam class="ncontent">news-content</spam>
-      </div>
-
-
-      <!--내 관심사 뉴스 - 3개-->    
-    <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;">내 관심사 뉴스</h2>
-      <div class="news">
-        <div class="tags"><p>부정적</p></div>
-        <h1>news title</h1>
-        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
-        <spam class="ncontent q">news-content</spam>
-      </div>
-
-      <div class="news">
-        <div class="tags"><p>부정적</p></div>
-        <h1>news title</h1>
-        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
-        <spam class="ncontent">news-content</spam>
-      </div>
-      
-      <div class="news">
-        <div class="tags"><p>부정적</p></div>
-        <h1>news title</h1>
-        <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
-        <spam class="ncontent">news-content</spam>
-      </div>
+</head>
+<body>
+    <div class="loading-wrap">
+      <div class="loading-spinner"></div>
+      <p>페이지가 로딩 중입니다...</p>
     </div>
-  </body>
+    <div class="news-container">
+      <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;">9:41 핵심 뉴스</h2>
+        <div class="news">
+            <div class="tags" id="tags1"></div>
+            <h1 id="title1"></h1>
+            <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+            <span class="ncontent" id="summary1"></span>
+        </div>
+      <h1>&nbsp;</h1>
+
+        <h2 style="display: block; margin-left: 10px; font-size: 1.5rem; font-weight: bold;">내 관심사 뉴스</h2>
+        <div class="news">
+            <div class="tags" id="tags2"></div>
+            <h1 id="title2"></h1>
+            <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+            <span class="ncontent" id="summary2"></span>
+        </div>
+
+        <div class="news">
+            <div class="tags" id="tags3"></div>
+            <h1 id="title3"></h1>
+            <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+            <span class="ncontent" id="summary3"></span>
+        </div>
+
+        <div class="news">
+            <div class="tags" id="tags4"></div>
+            <h1 id="title4"></h1>
+            <img src="https://picsum.photos/id/1/200/300" alt="news-image"/>
+            <span class="ncontent" id="summary4"></span>
+        </div>
+    </div>
+</body>
+<script>
+    window.addEventListener("DOMContentLoaded", async function () {
+        const loading = document.getElementById("loading");
+        const content = document.getElementById("content");
+
+        try {
+            const response = await fetch('http://localhost:5000/news_get?name=경제');
+            const data = await response.json();
+
+            // 데이터 넣기
+            document.getElementById('title1').innerText = data.title1;
+            document.getElementById('summary1').innerText = data.summary1;
+            document.getElementById('tags1').innerText = `#${data.tags1}`;
+
+            document.getElementById('title2').innerText = data.title2;
+            document.getElementById('summary2').innerText = data.summary2;
+            document.getElementById('tags2').innerText = `#${data.tags2}`;
+
+            document.getElementById('title3').innerText = data.title3;
+            document.getElementById('summary3').innerText = data.summary3;
+            document.getElementById('tags3').innerText = `#${data.tags3}`;
+
+            document.getElementById('title4').innerText = data.title4;
+            document.getElementById('summary4').innerText = data.summary4;
+            document.getElementById('tags4').innerText = `#${data.tags4}`;
+        } catch (error) {
+            console.error("데이터 로드 실패", error);
+        } finally {
+            // 로딩 화면 숨기고 콘텐츠 보여줌
+            loading.style.display = "none";
+            content.style.display = "block";
+        }
+    });
+
+</script>
 </html>
