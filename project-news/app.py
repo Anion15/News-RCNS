@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import re
+import os
 from ollama import chat
 from ollama import ChatResponse
 from transformers import pipeline, logging
@@ -22,8 +23,32 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+
+#항상 뭔지 모르는 이유로 exaone이 태그를 달고 뒤에 이유를 붙여주는데 그거 방지용임.
+def remove_reason_from_text(text):
+    if "이유" in text:
+        index = text.find("이유")
+        return text[:index].strip()
+    return text
+
+
 # 경고 메시지 숨기기
 logging.set_verbosity_error()
+
+
+
+#같은 내용을 한번 더 처리해서 시간 낭비하는걸 방지하려고 만들었음
+file_list = ["title.txt", "summary.txt", "tag.txt", "opinion.txt"]
+
+# 각 파일 존재 여부 확인하고 없으면 생성
+for file_name in file_list:
+    if not os.path.exists(file_name):
+        with open(file_name, 'w', encoding='utf-8') as f:
+            pass  # 빈 파일 생성
+        print(f"{file_name} 파일을 생성했습니다.\n")
+    else:
+        print(f"{file_name} 파일이 이미 존재합니다.\n")
+
 
 
 print("세팅이 완료되었습니다")
@@ -37,6 +62,8 @@ def home():
 @app.route('/news_get', methods=['GET'])
 def get_name():
     name = request.args.get('name')
+    #요약된 기사들 담을 리스트 미리 초기화
+    summarized_articles = []
 
 
     # 네이버 뉴스 URL
@@ -158,42 +185,144 @@ def get_name():
 
     #뉴스 요약, 반대(다른) 여론 생성
     article_content = article_contents[num - 1]['content']
-    
-    try:
-        # 1. 한국어 요약 모델 설정
-        summarizer = pipeline(
-            "summarization",
-            model="lcw99/t5-base-korean-text-summary"
-        )
-        # 4. 요약 실행
-        summary = summarizer(
-            article_content,
-            max_length=150,
-            min_length=50,
-            do_sample=False
-        )
-        summary_text = summary[0]['summary_text']
-        print(f"요약: {summary_text}\n")
-        mainsummary = summary_text
 
-        response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
-            'role': 'user',
-            'content': f"'''{article_content}''' 이 뉴스기사를 대중의 관점으로 보았을 때 '긍정적', '부정적', '중립적' 중에 어떤것인지 한 단어로 대답해 주세요.",
-        }])
-        print(f"태그: {response.message.content}")
-        maintage = response.message.content
 
+
+    isthere = -1
+    #이미 있는지 확인
+    with open("title.txt", "r", encoding="utf-8") as f:
+        for i, line in enumerate(f):
+            if line.strip() == article_contents[num - 1]['title']:
+                isthere = i # 0부터 시작
+                break
+
+    if isthere != -1:
+        print("찾고있는 처리된 기사가 이미 저장되어있어서 저장된걸로 대체함.")
+        target_line = isthere
+
+        with open("summary.txt", "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                if i == target_line:
+                    mainsummary = line.strip()
+                    break
+
+        with open("tag.txt", "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                if i == target_line:
+                    maintage = line.strip()
+                    break
+
+
+        with open("opinion.txt", "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                if i == target_line:
+                    mainopinion = line.strip()
+                    break
+
+    else:
         
-        response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
-            'role': 'user',
-            'content': f"'''{article_content}''' 이 뉴스기사와 다른 의견이나 의문점을 한국어 한 문장으로 짧게 대답해 주세요.",
-        }])
-        print(f"의문점: {response.message.content}")
-        mainopinion = response.message.content
+        #동시저장 방지
+        with open("title.txt", "a", encoding="utf-8") as f:
+            f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
+
+        with open("summary.txt", "a", encoding="utf-8") as f:
+            f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
+
+        with open("tag.txt", "a", encoding="utf-8") as f:
+            f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
+
+        with open("opinion.txt", "a", encoding="utf-8") as f:
+            f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
 
 
-    except Exception as e:
-        print(f"오류 발생: {e}")
+        with open("title.txt", "r", encoding="utf-8") as f:
+            title_len = sum(1 for _ in f)
+
+        last_index = title_len - 1  # 마지막 줄의 인덱스
+        
+        try:
+            
+            #제목 먼저 저장            
+            with open("title.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                for i, line in enumerate(f_old):
+                    if i == last_index:
+                        f_new.write(article_contents[num - 1]['title'] + "\n")   # 해당 줄은 새 내용으로
+                    else:
+                        f_new.write(line)       # 나머지는 그대로 복사
+
+            os.replace("temp.txt", "title.txt")  # 임시 파일로 원본 덮어쓰기
+
+
+            # 1. 한국어 요약 모델 설정
+            summarizer = pipeline(
+                "summarization",
+                model="lcw99/t5-base-korean-text-summary"
+            )
+            # 4. 요약 실행
+            summary = summarizer(
+                article_content,
+                max_length=150,
+                min_length=50,
+                do_sample=False
+            )
+            summary_text = summary[0]['summary_text']
+            print(f"요약: {summary_text}\n")
+            mainsummary = summary_text
+
+
+            
+            with open("summary.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                for i, line in enumerate(f_old):
+                    if i == last_index:
+                        f_new.write(mainsummary + "\n")   # 해당 줄은 새 내용으로
+                    else:
+                        f_new.write(line)       # 나머지는 그대로 복사
+
+            os.replace("temp.txt", "summary.txt")  # 임시 파일로 원본 덮어쓰기
+
+            
+
+            response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
+                'role': 'user',
+                'content': f"'''{article_content}''' 이 뉴스기사를 대중의 관점으로 보았을 때 '긍정적', '부정적', '중립적' 중에 어떤것인지 한 단어로 대답해 주세요.",
+            }])
+            print(f"태그: {response.message.content}")
+            maintage = remove_reason_from_text(response.message.content)
+
+
+            with open("tag.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                for i, line in enumerate(f_old):
+                    if i == last_index:
+                        f_new.write(maintage + "\n")   # 해당 줄은 새 내용으로
+                    else:
+                        f_new.write(line)       # 나머지는 그대로 복사
+
+            os.replace("temp.txt", "tag.txt")  # 임시 파일로 원본 덮어쓰기
+
+
+
+            
+            response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
+                'role': 'user',
+                'content': f"'''{article_content}''' 이 뉴스기사와 다른 의견이나 의문점을 한국어 한 문장으로 짧게 대답해 주세요.",
+            }])
+            print(f"의문점: {response.message.content}")
+            mainopinion = response.message.content
+
+
+            with open("opinion.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                for i, line in enumerate(f_old):
+                    if i == last_index:
+                        f_new.write(mainopinion + "\n")   # 해당 줄은 새 내용으로
+                    else:
+                        f_new.write(line)       # 나머지는 그대로 복사
+
+            os.replace("temp.txt", "opinion.txt")  # 임시 파일로 원본 덮어쓰기
+            
+
+
+        except Exception as e:
+            print(f"오류 발생: {e}")
 
 
 
@@ -217,7 +346,7 @@ def get_name():
     # 브라우저 설정
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
-    # 검색할 이름 입력 (예: "코딩 교육 의무")
+    # 검색할 이름 입력
     name = "경제"
     encoded_name = urllib.parse.quote(name)  # 이름 인코딩
 
@@ -269,7 +398,7 @@ def get_name():
     9. {articles[8]['title']}
     10. {articles[9]['title']}
 
-    중에서 가장 중요한 뉴스를 3개 골라서 아무말 없이 그냥 "번호만"말해줘
+    중에서 가장 중요한 뉴스를 3개 골라서 아무말 없이 그냥 "번호만"말해줘 (대답 예시: 1 2 3)
     """,
     }])
 
@@ -293,88 +422,191 @@ def get_name():
 
     #1, 2, 3 요약, 의문점 찾기
     def summarize_and_get_opinion(article_content, title, index):
-        try:
-            # 1. 한국어 요약 모델 설정
-            summarizer = pipeline(
-                "summarization",
-                model="lcw99/t5-base-korean-text-summary"
-            )
-            # 4. 요약 실행
-            summary = summarizer(
-                article_content,
-                max_length=150,
-                min_length=50,
-                do_sample=False
-            )
-            summary_text = summary[0]['summary_text']
 
-            # 의견 받기
-            response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
-                'role': 'user',
-                'content': f"'''{article_content}''' 이 뉴스기사와 다른 의견이나 의문점을 한국어 한 문장으로 짧게 대답해 주세요.",
-            }])
-            print(f"\선택한 뉴스의 의문점: {response.message.content}\n")
+        isthere = -1
+        #이미 있는지 확인
+        with open("title.txt", "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                if line.strip() == title:
+                    isthere = i # 0부터 시작
+                    break
 
-            opinionans = response.message.content
+        if isthere != -1:
+            print("찾고있는 처리된 기사가 이미 저장되어있어서 저장된걸로 대체함.")
+            target_line = isthere
 
-            response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
-                'role': 'user',
-                'content': f"'''{article_content}''' 이 뉴스기사를 대중의 관점으로 보았을 때 '긍정적', '부정적', '중립적' 중에 어떤것인지 한 단어로 대답해 주세요.",
-            }])
-            print(f"\n선택한 뉴스의 다른 의견: {response.message.content}\n")
+            with open("title.txt", "r", encoding="utf-8") as f:
+                for i, line in enumerate(f):
+                    if i == target_line:
+                        new_title = line.strip()
+                        break
 
-            # 요약과 의문점 저장
+            with open("summary.txt", "r", encoding="utf-8") as f:
+                for i, line in enumerate(f):
+                    if i == target_line:
+                        new_summary_text = line.strip()
+                        break
+
+            with open("tag.txt", "r", encoding="utf-8") as f:
+                for i, line in enumerate(f):
+                    if i == target_line:
+                        new_tags_e = line.strip()
+                        break
+
+
+            with open("opinion.txt", "r", encoding="utf-8") as f:
+                for i, line in enumerate(f):
+                    if i == target_line:
+                        new_opinionans = line.strip()
+                        break
+                            # 요약과 의문점 저장
             article_info = {
-                'title': title,
-                'summary': summary_text,
-                'opinion': opinionans,
-                'tags' : response.message.content
+                'title': new_title,
+                'summary': new_summary_text,
+                'opinion': new_opinionans,
+                'tags' : new_tags_e
             }
             return article_info
 
-        except Exception as e:
-            print(f"오류 발생 (기사 {index+1}): {e}")
-            return None
+        else:
+            
+            #동시저장 방지
+            with open("title.txt", "a", encoding="utf-8") as f:
+                f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
 
-    # 요약된 내용을 저장할 리스트
-    summarized_articles = [] # 내 관심사 뉴스 저장소
+            with open("summary.txt", "a", encoding="utf-8") as f:
+                f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
 
-    # 첫 번째, 두 번째, 세 번째 기사에 대해 요약과 의문점 처리
-    if selected1 is not None and selected1 < len(articles):
-        article_content1 = articles[selected1]['content']
-        title1 = articles[selected1]['title']
-        summarized_article1 = summarize_and_get_opinion(article_content1, title1, selected1)
-        if summarized_article1:
-            summarized_articles.append({
-                'title': summarized_article1['title'],
-                'summary': summarized_article1['summary'],
-                'opinion': summarized_article1['opinion'],
-                'tags': summarized_article1['tags']
-            })
+            with open("tag.txt", "a", encoding="utf-8") as f:
+                f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
 
-    if selected2 is not None and selected2 < len(articles):
-        article_content2 = articles[selected2]['content']
-        title2 = articles[selected2]['title']
-        summarized_article2 = summarize_and_get_opinion(article_content2, title2, selected2)
-        if summarized_article2:
-            summarized_articles.append({
-                'title': summarized_article2['title'],
-                'summary': summarized_article2['summary'],
-                'opinion': summarized_article2['opinion'],
-                'tags': summarized_article2['tags']
-            })
+            with open("opinion.txt", "a", encoding="utf-8") as f:
+                f.write("동시저장 방지용 임시텍스트\n")  # 줄 추가
 
-    if selected3 is not None and selected3 < len(articles):
-        article_content3 = articles[selected3]['content']
-        title3 = articles[selected3]['title']
-        summarized_article3 = summarize_and_get_opinion(article_content3, title3, selected3)
-        if summarized_article3:
-            summarized_articles.append({
-                'title': summarized_article3['title'],
-                'summary': summarized_article3['summary'],
-                'opinion': summarized_article3['opinion'],
-                'tags': summarized_article3['tags']
-            })
+
+            with open("title.txt", "r", encoding="utf-8") as f:
+                title_len = sum(1 for _ in f)
+
+            last_index = title_len - 1  # 마지막 줄의 인덱스
+
+
+
+
+            
+            try:
+                
+                #제목 먼저 저장                
+                new_title = str(title).strip()  # 혹시 모를 타입 에러 방지 + 줄 끝 공백 제거
+                with open("title.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                    for i, line in enumerate(f_old):
+                        if i == last_index:
+                            f_new.write(new_title + "\n")   # 해당 줄은 새 내용으로
+                        else:
+                            f_new.write(line)       # 나머지는 그대로 복사
+
+                os.replace("temp.txt", "title.txt")  # 임시 파일로 원본 덮어쓰기
+
+
+
+                
+                # 1. 한국어 요약 모델 설정
+                summarizer = pipeline(
+                    "summarization",
+                    model="lcw99/t5-base-korean-text-summary"
+                )
+                # 4. 요약 실행
+                summary = summarizer(
+                    article_content,
+                    max_length=150,
+                    min_length=50,
+                    do_sample=False
+                )
+                summary_text = summary[0]['summary_text']
+                new_summary_text = str(summary_text).strip()
+                
+                with open("summary.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                    for i, line in enumerate(f_old):
+                        if i == last_index:
+                            f_new.write(new_summary_text + "\n")   # 해당 줄은 새 내용으로
+                        else:
+                            f_new.write(line)       # 나머지는 그대로 복사
+
+                os.replace("temp.txt", "summary.txt")  # 임시 파일로 원본 덮어쓰기
+
+
+
+                # 의견 받기
+                response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
+                    'role': 'user',
+                    'content': f"'''{article_content}''' 이 뉴스기사와 다른 의견이나 의문점을 한국어 한 문장으로 짧게 대답해 주세요.",
+                }])
+                print(f"\n선택한 뉴스의 의문점: {response.message.content}\n")
+
+                opinionans = response.message.content
+                new_opinionans = str(opinionans).strip()
+
+                with open("opinion.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                    for i, line in enumerate(f_old):
+                        if i == last_index:
+                            f_new.write(new_opinionans + "\n")   # 해당 줄은 새 내용으로
+                        else:
+                            f_new.write(line)       # 나머지는 그대로 복사
+
+                os.replace("temp.txt", "opinion.txt")  # 임시 파일로 원본 덮어쓰기
+                
+
+                response: ChatResponse = chat(model='exaone3.5:2.4b', messages=[{
+                    'role': 'user',
+                    'content': f"'''{article_content}''' 이 뉴스기사를 대중의 관점으로 보았을 때 '긍정적', '부정적', '중립적' 중에 어떤것인지 한 단어로 대답해 주세요.",
+                }])
+                print(f"\n선택한 뉴스의 다른 의견: {response.message.content}\n")
+
+                tags_e = remove_reason_from_text(response.message.content)
+                new_tags_e = str(tags_e).strip()
+
+                with open("tag.txt", "r", encoding="utf-8") as f_old, open("temp.txt", "w", encoding="utf-8") as f_new:
+                    lines = f_old.readlines()  # 파일 전체 줄을 리스트로 읽음
+                    for i, line in enumerate(lines):
+                        if i == last_index:
+                            f_new.write(new_tags_e + "\n")   # 해당 줄은 새 내용으로
+                        else:
+                            f_new.write(line)       # 나머지는 그대로 복사
+
+                os.replace("temp.txt", "tag.txt")  # 임시 파일로 원본 덮어쓰기
+                               
+
+                # 요약과 의문점 저장
+                article_info = {
+                    'title': new_title,
+                    'summary': new_summary_text,
+                    'opinion': new_opinionans,
+                    'tags' : new_tags_e
+                }
+                return article_info
+
+            except Exception as e:
+                print(f"오류 발생 (기사 {index+1}): {e}")
+                return None
+
+
+
+
+    # selected 값들을 리스트로 묶고 루프로 처리
+    selected_indices = [selected1, selected2, selected3]
+
+    for idx in selected_indices:
+        if idx is not None and 0 <= idx < len(articles):
+            article = articles[idx]
+            summarized = summarize_and_get_opinion(article['content'], article['title'], idx)
+            if summarized:
+                summarized_articles.append({
+                    'title': summarized['title'],
+                    'summary': summarized['summary'],
+                    'opinion': summarized['opinion'],
+                    'tags': summarized['tags']
+                })
+
+
 
     # 결과 출력
     print(f"\n\n\n--------------------------\n\n\n내 관심사 : {name}. 뉴스 기사 목록:")
@@ -402,25 +634,26 @@ def get_name():
             "summary1": mainsummary,
             "tags1": maintage,
             "opinion1": mainopinion,
-            
-            # 내 관심사 뉴스 (selected1, selected2, selected3에 대한 정보)
-            "title2": summarized_articles[0]['title'],
-            "title3": summarized_articles[1]['title'],
-            "title4": summarized_articles[2]['title'],
 
-            "summary2": summarized_articles[0]['summary'],
-            "summary3": summarized_articles[1]['summary'],
-            "summary4": summarized_articles[2]['summary'],
+            # 내 관심사 뉴스 (최대 3개까지 안전하게 처리)
+            "title2": summarized_articles[0]['title'] if len(summarized_articles) > 0 else "뉴스 없음",
+            "title3": summarized_articles[1]['title'] if len(summarized_articles) > 1 else "뉴스 없음",
+            "title4": summarized_articles[2]['title'] if len(summarized_articles) > 2 else "뉴스 없음",
 
-            "tags2": summarized_articles[0]['tags'],
-            "tags3": summarized_articles[1]['tags'],
-            "tags4": summarized_articles[2]['tags'],
+            "summary2": summarized_articles[0]['summary'] if len(summarized_articles) > 0 else "뉴스 없음",
+            "summary3": summarized_articles[1]['summary'] if len(summarized_articles) > 1 else "뉴스 없음",
+            "summary4": summarized_articles[2]['summary'] if len(summarized_articles) > 2 else "뉴스 없음",
 
-            "opinion2": summarized_articles[0]['opinion'],
-            "opinion3": summarized_articles[1]['opinion'],
-            "opinion4": summarized_articles[2]['opinion'],
+            "tags2": summarized_articles[0]['tags'] if len(summarized_articles) > 0 else "뉴스 없음",
+            "tags3": summarized_articles[1]['tags'] if len(summarized_articles) > 1 else "뉴스 없음",
+            "tags4": summarized_articles[2]['tags'] if len(summarized_articles) > 2 else "뉴스 없음",
+
+            "opinion2": summarized_articles[0]['opinion'] if len(summarized_articles) > 0 else "뉴스 없음",
+            "opinion3": summarized_articles[1]['opinion'] if len(summarized_articles) > 1 else "뉴스 없음",
+            "opinion4": summarized_articles[2]['opinion'] if len(summarized_articles) > 2 else "뉴스 없음",
         }
     ), 200
+
 
 
 
