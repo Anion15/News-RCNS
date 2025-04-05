@@ -15,8 +15,9 @@ from transformers import pipeline, logging
 from deep_translator import GoogleTranslator
 from ollama import chat
 from ollama import ChatResponse
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, CORS
 app = Flask(__name__)
+CORS(app)
 
 # 경고 메시지 숨기기
 logging.set_verbosity_error()
