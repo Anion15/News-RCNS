@@ -9,13 +9,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import re
 from ollama import chat
 from ollama import ChatResponse
 from transformers import pipeline, logging
 from deep_translator import GoogleTranslator
 from ollama import chat
 from ollama import ChatResponse
-from flask import Flask, request, jsonify, render_template, CORS
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+
 app = Flask(__name__)
 CORS(app)
 
@@ -205,8 +208,6 @@ def get_name():
     logging.set_verbosity_error()
 
 
-
-
     # 헤드리스 모드 설정
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -272,31 +273,22 @@ def get_name():
     """,
     }])
 
-    # response.message.content에서 번호를 추출하여 변수에 저장
-    selected_numbers = response.message.content.strip().split("\n")  # 번호만 분리
 
-    # 선택된 번호를 정수로 추출하여 리스트로 저장
-    selected_indexes = []
-    for num in selected_numbers:
-        try:
-            # 각 번호를 추출하고, 쉼표로 구분된 번호가 있으면 분리하여 리스트에 추가
-            num_list = num.split(".")[0].strip()  # 번호만 추출
-            if num_list:
-                # 숫자와 쉼표가 포함된 경우 처리
-                nums = num_list.replace(" ", "").split(",")
-                selected_indexes.extend([int(n) - 1 for n in nums if n.isdigit()])  # 1-based -> 0-based 변환
-        except Exception as e:
-            print(f"Error parsing number {num}: {e}")
 
-    # 선택된 번호를 selected1, selected2, selected3에 저장
+    print(f"\n선택한 3개의 뉴스 번호 원본: {response.message.content}\n")
+
+    # 모든 정수 숫자만 추출 (불규칙한 구분자 대응)
+    selected_indexes = [int(n) - 1 for n in re.findall(r'\d+', response.message.content)]
+
+    # 개수 확인해서 인덱스 지정
     selected1 = selected_indexes[0] if len(selected_indexes) > 0 else None
     selected2 = selected_indexes[1] if len(selected_indexes) > 1 else None
     selected3 = selected_indexes[2] if len(selected_indexes) > 2 else None
 
-    # 출력
-    #print(f"선택된 첫 번째 뉴스 인덱스: {selected1}")
-    #print(f"선택된 두 번째 뉴스 인덱스: {selected2}")
-    #print(f"선택된 세 번째 뉴스 인덱스: {selected3}")
+    print(f"선택된 첫 번째 뉴스 인덱스: {selected1}")
+    print(f"선택된 두 번째 뉴스 인덱스: {selected2}")
+    print(f"선택된 세 번째 뉴스 인덱스: {selected3}")
+
 
 
     #1, 2, 3 요약, 의문점 찾기
@@ -321,6 +313,7 @@ def get_name():
                 'role': 'user',
                 'content': f"'''{article_content}''' 이 뉴스기사와 다른 의견이나 의문점을 한국어 한 문장으로 짧게 대답해 주세요.",
             }])
+            print(f"\선택한 뉴스의 의문점: {response.message.content}\n")
 
             opinionans = response.message.content
 
@@ -328,6 +321,7 @@ def get_name():
                 'role': 'user',
                 'content': f"'''{article_content}''' 이 뉴스기사를 대중의 관점으로 보았을 때 '긍정적', '부정적', '중립적' 중에 어떤것인지 한 단어로 대답해 주세요.",
             }])
+            print(f"\n선택한 뉴스의 다른 의견: {response.message.content}\n")
 
             # 요약과 의문점 저장
             article_info = {
@@ -410,21 +404,21 @@ def get_name():
             "opinion1": mainopinion,
             
             # 내 관심사 뉴스 (selected1, selected2, selected3에 대한 정보)
-            "title2": summarized_articles[0]['title'] if len(summarized_articles) > 0 else "없음",
-            "title3": summarized_articles[1]['title'] if len(summarized_articles) > 1 else "없음",
-            "title4": summarized_articles[2]['title'] if len(summarized_articles) > 2 else "없음",
+            "title2": summarized_articles[0]['title'],
+            "title3": summarized_articles[1]['title'],
+            "title4": summarized_articles[2]['title'],
 
-            "summary2": summarized_articles[0]['summary'] if len(summarized_articles) > 0 else "없음",
-            "summary3": summarized_articles[1]['summary'] if len(summarized_articles) > 1 else "없음",
-            "summary4": summarized_articles[2]['summary'] if len(summarized_articles) > 2 else "없음",
+            "summary2": summarized_articles[0]['summary'],
+            "summary3": summarized_articles[1]['summary'],
+            "summary4": summarized_articles[2]['summary'],
 
-            "tags2": summarized_articles[0]['tags'] if len(summarized_articles) > 0 else "없음",
-            "tags3": summarized_articles[1]['tags'] if len(summarized_articles) > 1 else "없음",
-            "tags4": summarized_articles[2]['tags'] if len(summarized_articles) > 2 else "없음",
+            "tags2": summarized_articles[0]['tags'],
+            "tags3": summarized_articles[1]['tags'],
+            "tags4": summarized_articles[2]['tags'],
 
-            "opinion2": summarized_articles[0]['opinion'] if len(summarized_articles) > 0 else "없음",
-            "opinion3": summarized_articles[1]['opinion'] if len(summarized_articles) > 1 else "없음",
-            "opinion4": summarized_articles[2]['opinion'] if len(summarized_articles) > 2 else "없음",
+            "opinion2": summarized_articles[0]['opinion'],
+            "opinion3": summarized_articles[1]['opinion'],
+            "opinion4": summarized_articles[2]['opinion'],
         }
     ), 200
 
