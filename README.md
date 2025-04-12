@@ -18,7 +18,7 @@
 터미널 또는 명령 프롬프트(cmd)에서 아래 명령어를 입력하여 도커 이미지를 다운로드합니다.
 (도커 이미지는 6.1GB로 다운로드시 시간이 소요될 수 있습니다.)
 ```bash
-docker pull anion15/news-rcns
+docker pull anion15/news-rcns:latest
 ```
 > **도커 이미지 페이지 :**[Docker-overview](https://hub.docker.com/r/anion15/news-rcns)
 
