@@ -360,64 +360,77 @@
     });
 </script>
 
+
 <script>
     window.addEventListener("DOMContentLoaded", async function () {
-        const loading = document.getElementById(".loading-wrap");
-        const content = document.getElementById(".news-container");
+        const getParam = (name) => new URLSearchParams(window.location.search).get(name);
+
+        const encodeToBase64 = (obj) => {
+            return btoa(encodeURIComponent(JSON.stringify(obj)));
+        };
+
+        const decodeFromBase64 = (b64str) => {
+            try {
+                return JSON.parse(decodeURIComponent(atob(b64str)));
+            } catch (e) {
+                console.error("Base64 디코딩 오류", e);
+                return null;
+            }
+        };
+
+        const fillData = (data) => {
+            const keys = [
+                'title1', 'summary1', 'tags1', 'opinion1', 'newopinion1', 'img1',
+                'title2', 'summary2', 'tags2', 'opinion2', 'newopinion2', 'img2',
+                'title3', 'summary3', 'tags3', 'opinion3', 'newopinion3', 'img3',
+                'title4', 'summary4', 'tags4', 'opinion4', 'newopinion4', 'img4'
+            ];
+            keys.forEach(id => {
+                const el = document.getElementById(id);
+                const val = data[id];
+                if (el && val) {
+                    if (id.startsWith("img")) el.src = val;
+                    else el.innerText = id.startsWith("tags") ? `#${val}` : val;
+                }
+            });
+
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('main-title').innerText = `${h}:${m} 핵심 뉴스`;
+            document.getElementById("loading-p").style.display = "none";
+        };
+
+        // ✅ 1. URL에 Base64 데이터 있으면 복원
+        const encodedData = getParam("data");
+        if (encodedData) {
+            const parsed = decodeFromBase64(encodedData);
+            if (parsed) {
+                fillData(parsed);
+                return;
+            }
+        }
+
+        // ✅ 2. 없으면 키워드 입력 → 서버 요청 → 표시 후 Base64로 URL 저장
+        let keyword = prompt('관심 주제의 키워드를 한가지만 입력해주세요.', '경제');
+        if (!keyword) return;
 
         try {
-            let keyword = prompt('관심 주제의 키워드를 한가지만 입력해주세요.', '경제');
             const response = await fetch(`http://localhost:5000/news_get?name=${encodeURIComponent(keyword)}`);
-
             const data = await response.json();
-            let today = new Date();
-            let hours = today.getHours(); // 시
-            let minutes = today.getMinutes();  // 분
 
-            // 데이터 넣기
-            document.getElementById('title1').innerText = data.title1;
-            document.getElementById('summary1').innerText = data.summary1;
-            document.getElementById('tags1').innerText = `#${data.tags1}`;
-            document.getElementById('opinion1').innerText = data.opinion1;
-            document.getElementById('newopinion1').innerText = data.newopinion1;
-            document.getElementById('img1').src = data.img1;
+            fillData(data);
 
-            document.getElementById('title2').innerText = data.title2;
-            document.getElementById('summary2').innerText = data.summary2;
-            document.getElementById('tags2').innerText = `#${data.tags2}`;
-            document.getElementById('opinion2').innerText = data.opinion2;
-            document.getElementById('newopinion2').innerText = data.newopinion2;
-            document.getElementById('img2').src = data.img2;
+            const b64 = encodeToBase64(data);
+            const urlParams = new URLSearchParams({ name: keyword, data: b64 });
+            history.replaceState(null, "", "?" + urlParams.toString());
 
-            document.getElementById('title3').innerText = data.title3;
-            document.getElementById('summary3').innerText = data.summary3;
-            document.getElementById('tags3').innerText = `#${data.tags3}`;
-            document.getElementById('opinion3').innerText = data.opinion3;
-            document.getElementById('newopinion3').innerText = data.newopinion3;
-            document.getElementById('img3').src = data.img3;
-
-            document.getElementById('title4').innerText = data.title4;
-            document.getElementById('summary4').innerText = data.summary4;
-            document.getElementById('tags4').innerText = `#${data.tags4}`;
-            document.getElementById('opinion4').innerText = data.opinion4;
-            document.getElementById('newopinion4').innerText = data.newopinion4;
-            document.getElementById('img4').src = data.img4;
-
-            // 한 자리 숫자일 경우 앞에 0을 붙이기
-            if (hours < 10) hours = '0' + hours;
-            if (minutes < 10) minutes = '0' + minutes;
-            document.getElementById('main-title').innerText = `${hours}:${minutes} 핵심 뉴스`;
-            document.getElementById("loading-p").style.display = "none";
-        } catch (error) {
-            console.error("데이터 로드 실패", error);
-            //document.getElementById("load-t").innerText = "데이터 로드 실패, 새로고침하여 다시 시도해 주세요.";
-
-        } finally {
-            // 로딩 화면 숨기고 콘텐츠 보여줌
-            document.getElementById("load-t").innerText = "데이터 로드 실패, 새로고침하여 다시 시도해 주세요. \n(계속 실패할 시 개발자에게 문의 바랍니다.)";
-            //document.getElementById("loading-p").style.display = "none";
+        } catch (err) {
+            console.error("데이터 로드 실패", err);
+            document.getElementById("load-t").innerText =
+                "데이터 로드 실패, 새로고침하여 다시 시도해 주세요. (계속 실패할 시 개발자에게 문의 바랍니다.)";
         }
     });
-
 </script>
+    
 </html>
