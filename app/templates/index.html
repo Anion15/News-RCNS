@@ -364,11 +364,12 @@
 <script>
     window.addEventListener("DOMContentLoaded", async function () {
         const getParam = (name) => new URLSearchParams(window.location.search).get(name);
-
+    
+        // Base64 인코딩/디코딩
         const encodeToBase64 = (obj) => {
             return btoa(encodeURIComponent(JSON.stringify(obj)));
         };
-
+    
         const decodeFromBase64 = (b64str) => {
             try {
                 return JSON.parse(decodeURIComponent(atob(b64str)));
@@ -377,7 +378,7 @@
                 return null;
             }
         };
-
+    
         const fillData = (data) => {
             const keys = [
                 'title1', 'summary1', 'tags1', 'opinion1', 'newopinion1', 'img1',
@@ -393,14 +394,10 @@
                     else el.innerText = id.startsWith("tags") ? `#${val}` : val;
                 }
             });
-
-            const now = new Date();
-            const h = now.getHours().toString().padStart(2, '0');
-            const m = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('main-title').innerText = `${h}:${m} 핵심 뉴스`;
+            document.getElementById('main-title').innerText = `${data.time} 핵심 뉴스`;
             document.getElementById("loading-p").style.display = "none";
         };
-
+    
         // URL에 Base64 데이터 있으면 복원
         const encodedData = getParam("data");
         if (encodedData) {
@@ -410,27 +407,34 @@
                 return;
             }
         }
-
-        // 없으면 키워드 입력 → 서버 요청 → 표시 후 Base64로 URL 저장
+    
+        // 없으면 키워드 입력 → 서버 요청 → 표시 후 Base64로 저장
         let keyword = prompt('관심 주제의 키워드를 한가지만 입력해주세요.', '경제');
         if (!keyword) return;
-
+    
         try {
             const response = await fetch(`http://localhost:5000/news_get?name=${encodeURIComponent(keyword)}`);
             const data = await response.json();
-
+    
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const time = `${h}:${m}`;
+            data.time = time;
+    
             fillData(data);
-
-            const b64 = encodeToBase64(data);
-            const urlParams = new URLSearchParams({ name: keyword, data: b64 });
+    
+            const encoded = encodeToBase64(data);
+            const urlParams = new URLSearchParams({ name: keyword, data: encoded });
             history.replaceState(null, "", "?" + urlParams.toString());
-
+    
         } catch (err) {
             console.error("데이터 로드 실패", err);
             document.getElementById("load-t").innerText =
                 "데이터 로드 실패, 새로고침하여 다시 시도해 주세요. (계속 실패할 시 개발자에게 문의 바랍니다.)";
         }
     });
-</script>
+    </script>
+    
     
 </html>
