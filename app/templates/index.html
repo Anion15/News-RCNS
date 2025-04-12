@@ -401,7 +401,7 @@
             document.getElementById("loading-p").style.display = "none";
         };
 
-        // ✅ 1. URL에 Base64 데이터 있으면 복원
+        // URL에 Base64 데이터 있으면 복원
         const encodedData = getParam("data");
         if (encodedData) {
             const parsed = decodeFromBase64(encodedData);
@@ -411,7 +411,7 @@
             }
         }
 
-        // ✅ 2. 없으면 키워드 입력 → 서버 요청 → 표시 후 Base64로 URL 저장
+        // 없으면 키워드 입력 → 서버 요청 → 표시 후 Base64로 URL 저장
         let keyword = prompt('관심 주제의 키워드를 한가지만 입력해주세요.', '경제');
         if (!keyword) return;
 
