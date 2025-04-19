@@ -458,63 +458,58 @@ def get_name():
     # 뉴스 제목과 내용 저장할 리스트
     articles = []
 
-    try:
-        # 10개의 <div class="news_contents"> 찾기
-        news_items = driver.find_elements(By.CLASS_NAME, "news_contents")[:10]  # 최대 10개만
-        for item in news_items:
-            title_element = item.find_element(By.CLASS_NAME, "news_tit")
-            content_element = item.find_element(By.CLASS_NAME, "news_dsc")
+    # 공통 클래스만 포함된 요소를 CSS Selector로 찾기
+    news_items = driver.find_elements(By.CSS_SELECTOR, ".sds-comps-vertical-layout.sds-comps-full-layout")[:12]
 
-            # 뉴스 제목
-            title = title_element.text.strip() if title_element else None
+    for item in news_items:
+        try:
+            title_element = item.find_element(By.CSS_SELECTOR, ".sds-comps-text.sds-comps-text-ellipsis-1.sds-comps-text-type-headline1")
+            content_element = item.find_element(By.CSS_SELECTOR, ".sds-comps-text.sds-comps-text-ellipsis-3.sds-comps-text-type-body1")
+        except:
+            continue  # 제목이나 내용이 없으면 skip
 
-            # 뉴스 내용
-            content = content_element.text.strip() if content_element else None
+        title = title_element.text.strip()
+        content = content_element.text.strip()
 
-            default_imgurl = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjJmIY5-iIha8iSLZHScoPWTW4v9gRX6hbAv3er304DcP3m-xngQeoWQ-UxrHdKGAQeXWRB_yqJFU9qqhyWmvf5hta2j6_h2Fd-5v0Qoyenkd_ZWDy7s5xQIh8z9Q_tt94kc96tFEeFRcg/s1600/noimg.gif"
-            imgurl = default_imgurl
+        default_imgurl = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjJmIY5-iIha8iSLZHScoPWTW4v9gRX6hbAv3er304DcP3m-xngQeoWQ-UxrHdKGAQeXWRB_yqJFU9qqhyWmvf5hta2j6_h2Fd-5v0Qoyenkd_ZWDy7s5xQIh8z9Q_tt94kc96tFEeFRcg/s1600/noimg.gif"
+        imgurl = default_imgurl
 
-            try:
-                img_elements = item.find_elements(By.TAG_NAME, "img")
-                for img in img_elements:
-                    width = img.get_attribute("width")
-                    height = img.get_attribute("height")
-                    src = img.get_attribute("src")
+        try:
+            # 공통 이미지 클래스가 포함된 요소들만 찾기
+            img_elements = item.find_elements(By.CSS_SELECTOR, ".sds-comps-base-layout.sds-comps-inline-layout.sds-comps-image")
+            for img in img_elements:
+                width = img.get_attribute("width")
+                height = img.get_attribute("height")
+                src = img.get_attribute("src")
 
-                    # 너비 높이 조건 + base64 이미지가 아닌 경우만
-                    if width == "104" and height == "104" and src and not src.startswith("data:image"):
-                        src = src.strip()
-                        if "src=" in src:
-                            parsed_url = urllib.parse.urlparse(src)
-                            query_params = urllib.parse.parse_qs(parsed_url.query)
-                            real_src = query_params.get("src")
-                            if real_src and real_src[0].strip():
-                                imgurl = urllib.parse.unquote(real_src[0].strip())
-                            else:
-                                imgurl = src
+                if width == "104" and height == "104" and src and not src.startswith("data:image"):
+                    src = src.strip()
+                    if "src=" in src:
+                        parsed_url = urllib.parse.urlparse(src)
+                        query_params = urllib.parse.parse_qs(parsed_url.query)
+                        real_src = query_params.get("src")
+                        if real_src and real_src[0].strip():
+                            imgurl = urllib.parse.unquote(real_src[0].strip())
                         else:
                             imgurl = src
-                        break
-            except Exception as e:
-                print(f"이미지 URL 추출 오류: {e}")
+                    else:
+                        imgurl = src
+                    break
+        except Exception as e:
+            print(f"이미지 URL 추출 오류: {e}")
+
+        if title and content:
+            articles.append({
+                "title": title,
+                "content": content,
+                "img": imgurl
+            })
 
 
-
-            if title and content:
-                articles.append({
-                    "title": title,
-                    "content": content,
-                    "img": imgurl
-                })
-
-
-                
-
-    except Exception as e:
-        print(f"뉴스 추출 중 오류 발생: {e}")
 
     # 브라우저 종료
     driver.quit()
+
 
 
 
