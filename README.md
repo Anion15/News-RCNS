@@ -3,6 +3,8 @@
 뉴스 요약, 감정 태그, 반대 의견 자동 생성 시스템  
 **Emotion Tagging and Contrasting News Summarization System**
 
+</br>
+</br>
 
 ---
 
@@ -14,6 +16,9 @@
 - [macOS용 Docker](https://docs.docker.com/desktop/install/mac-install/)
 - [Linux용 Docker](https://docs.docker.com/engine/install/)
 
+</br>
+</br>
+
 ### 2. Docker 이미지 다운로드
 터미널 또는 명령 프롬프트(cmd)에서 아래 명령어를 입력하여 도커 이미지를 다운로드합니다.
 (도커 이미지는 6.1GB로 다운로드시 시간이 소요될 수 있습니다.)
@@ -21,6 +26,9 @@
 docker pull anion15/news-rcns:latest
 ```
 > **도커 이미지 페이지 :**[Docker-overview](https://hub.docker.com/r/anion15/news-rcns)
+
+</br>
+</br>
 
 ### 3. Ollama 설치
 
@@ -40,6 +48,9 @@ ollama serve
 ```
 >  이미 포트(기본: 11434)를 사용하는 프로세스가 있다면 `taskkill /PID [번호] /F` 명령어로 종료해야 합니다.
 >> 만약에 사용 중인 프로세스를 종료해도 계속 활성화된다면 `ollama run exaone3.5:2.4b` 하여도 됩니다.
+
+</br>
+</br>
 
 ---
 
@@ -70,6 +81,8 @@ https://127.0.0.1:5000
 
 외부망 연결이 추가로 필요하시면 ngrok을 이용하거나 Cloudflare Tunnel을 이용하면 됩니다.
 
+</br>
+</br>
 
 ---
 ## 설치 완료 -> 실행하기
@@ -84,7 +97,22 @@ https://127.0.0.1:5000
 7. https://127.0.0.1:5000/
 
 ---
+</br>
+</br>
 
+### Docker 말고 기본으로 실행하기
+1. ollama를 설치하고 exaone3.5:2.4b를 설치합니다
+> ```ollama run exaone3.5:2.4b```
+2. [main.py의 66번~67번줄](https://github.com/Anion15/News-RCNS/blob/8daf0f6dd9e3e1ab94f14eb8c2f9818cc0a64ee3/app/main.py#L66-L67)을 주석처리합니다.
+> ```#ollama_base = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")``` </br>
+> ```#client = ollama.Client(host=ollama_base) ```
+3. Cloudflare 또는 ngrok을 사용하여 내부망을 연결해줍니다.
+> ngrok : ```ngrok http 5000``` </br> Cloudflare-Tunnel : ```cloudflared tunnel --url http://localhost:5000```
+
+</br>
+</br>
+
+---
 
 ## 추가 저장 파일 구조 (자동)
 | 파일명 | 설명 |
