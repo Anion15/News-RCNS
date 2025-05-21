@@ -63,8 +63,8 @@ for file_name in file_list:
         print(f"{file_name} 파일이 이미 존재합니다.\n")
 
 
-ollama_base = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
-client = ollama.Client(host=ollama_base)
+ollama_base = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434") #여기부분 docker 사용 안하고 실행하려면 주석처리하셈
+client = ollama.Client(host=ollama_base) #여기부분 docker 사용 안하고 실행하려면 주석처리하셈
 
 print("세팅이 완료되었습니다")
 
