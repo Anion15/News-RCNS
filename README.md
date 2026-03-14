@@ -3,11 +3,25 @@
 뉴스 요약, 감정 태그, 반대 의견 자동 생성 시스템  
 **Emotion Tagging and Contrasting News Summarization System**
 
-</br>
-</br>
+
+이 프로젝트는 SW 대회 출전을 위해 제작했습니다.<br>
+중학교 3학년 때 기획한 프로젝트이며, 코드 작성에는 AI를 사용하지 않았습니다.<br>
+그 때문에 전체적으로 코드의 가독성이나 효율성이 다소 부족할 수 있습니다.<br><br>
+
+> 대회 준비 일정에 맞춰 빠르게 구현하는 데 집중한 프로젝트입니다.<br>
+> 구조적으로 다듬어야 할 부분이나 유지보수 측면에서 아쉬운 부분이 남아 있을 수 있다는 점을 감안해 주세요.
+>
+> 이 코드는 [LICENSE](https://github.com/Anion15/Apice.kr/blob/main/LICENSE)로 보호됩니다.<br>
+> 사용, 복사, 수정, 배포, 서브라이선스 관련 문의는 `juwony27@gmail.com`으로 부탁드립니다.
+
+<br>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Anion15/News-RCNS/main/preview.png" alt="preview" width="400">
+</p>
 
 ---
-
+<br><br>
 ##  설치 및 실행 방법
 
 ### 1. Docker 설치
@@ -47,7 +61,7 @@ net start com.docker.service
 ollama serve
 ```
 >  이미 포트(기본: 11434)를 사용하는 프로세스가 있다면 `taskkill /PID [번호] /F` 명령어로 종료해야 합니다.
->> 만약에 사용 중인 프로세스를 종료해도 계속 활성화된다면 `ollama run exaone3.5:2.4b` 하여도 됩니다.
+>> 만약에 사용 중인 프로세스를 종료해도 계속 활성화된다면 무시하고, `ollama run exaone3.5:2.4b` 하여도 됩니다.
 
 </br>
 </br>
