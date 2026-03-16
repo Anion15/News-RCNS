@@ -11,7 +11,7 @@
 > 대회 준비 일정에 맞춰 빠르게 구현하는 데 집중한 프로젝트입니다.<br>
 > 구조적으로 다듬어야 할 부분이나 유지보수 측면에서 아쉬운 부분이 남아 있을 수 있다는 점을 감안해 주세요.
 >
-> 이 코드는 [LICENSE](https://github.com/Anion15/Apice.kr/blob/main/LICENSE)로 보호됩니다.<br>
+> 이 리포지토리는 [LICENSE](https://github.com/Anion15/Apice.kr/blob/main/LICENSE)로 보호됩니다.<br>
 > 사용, 복사, 수정, 배포, 서브라이선스 관련 문의는 `juwony27@gmail.com`으로 부탁드립니다.
 
 <br>
