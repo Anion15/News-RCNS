@@ -138,6 +138,11 @@ https://127.0.0.1:5000
 | `newopinion.txt` | 다른 의견 요약 |
 | `img.txt` | 대표 이미지 링크 |
 
----
+<br>
 
-- 개발자: [Anion15](https://github.com/Anion15)
+<p align="center">
+  <sub>
+    News-RCNS · Emotion Tagging and Contrasting News Summarization System
+  </sub>
+</p>
+
